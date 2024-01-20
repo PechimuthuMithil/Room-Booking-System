@@ -76,7 +76,6 @@ int parse_req(struct classroom (*time_slots)[5], char* req, int* parsed_slot, in
   } else if (strcmp(slot, "18:30-20:00") == 0) {
     time_slot = 7;
   } else {
-    printf("Hi\n");
     return -3;
   }
 
@@ -143,7 +142,7 @@ int handle_GET_req(struct classroom (*time_slots)[5], int slot, int type, int co
     buf[0] = '\0'; // Ensure buf is initially an empty string
 
     // Add an opening bracket to the beginning of the string
-    strcat(buf, "{");
+    strcat(buf, "'{");
 
     for (int i = 0; i < MAX_SLOTS; i++) {
         for (int j = 0; j < MAX_ROOMS; j++) {
@@ -165,7 +164,7 @@ int handle_GET_req(struct classroom (*time_slots)[5], int slot, int type, int co
     }
 
     // Add a closing bracket to the end of the string
-    strcat(buf, "}");
+    strcat(buf, "}'");
     strcat(buf, "\0");
     // Output the final content of buf
     puts(buf);

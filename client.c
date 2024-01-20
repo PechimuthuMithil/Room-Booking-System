@@ -60,18 +60,17 @@ int main(int argc, char **argv) {
         // if (len_req > 0){
         //     req[len_req-1] = '\0';
         // }
-        printf("Row: %s", req);
+        printf("Request: %s", req);
         strcpy(sendline, req);
         send(sockfd, sendline, strlen(sendline), 0);
-        sleep(2);
+        sleep(1);
         recv(sockfd, recvline, MAXLINE, 0);
         size_t len2 = strlen(recvline);
-        if (len2 > 2) {
-            recvline[len2 - 1] = '\0';
-        }
+        // if (len2 > 2) {
+        //     recvline[len2 - 1] = '\0';
+        // }
         printf("\nString received from the server: %s\n", recvline);
-
-
+        printf("-----------------------------------\n");
 
         if (len2 > 2) {
             size_t len = strlen(req);
@@ -92,6 +91,7 @@ int main(int argc, char **argv) {
             }
             strcat(req, ",");
             strcat(req, recvline);
+            strcat(req,",");
             strcat(req, "\n");
 
             fprintf(output, "%s", req);
