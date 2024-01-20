@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
         printf("Request: %s", req);
         strcpy(sendline, req);
         send(sockfd, sendline, strlen(sendline), 0);
-        sleep(1);
+        // sleep(1);
         recv(sockfd, recvline, MAXLINE, 0);
         size_t len2 = strlen(recvline);
         // if (len2 > 2) {
