@@ -11,19 +11,11 @@
 #include <semaphore.h>
 
 
-#define MAXLINE 4096 /*max text line length*/
+#define MAXLINE 5120 /*max text line length*/
 #define SERV_PORT 3000 /*port*/
 #define LISTENQ 8 /*maximum number of client connections*/
 #define MAX_ROOMS 5
 #define MAX_SLOTS 8
-#define t1 "8-9:30"
-#define t2 "9:30-11:00"
-#define t3 "11:00-12:30"
-#define t4 "12:30-14:00"
-#define t5 "14:00-15:30"
-#define t6 "15:30-17:00"
-#define t7 "17:00-18:30"
-#define t8 "18:30-20:00"
 
 struct classroom {
   int booktime;
@@ -62,8 +54,12 @@ int parse_req(struct classroom (*time_slots)[5], char* req, int* parsed_slot, in
   if (room < 1 || room > 5){
     return -3;
   }
+  // printf("time: %s\n",slot);
+  // for (int i = 0; i < len1; i++){
+  //   printf("char %c\n",slot[i]);
+  // }
   int time_slot;
-  if (strcmp(slot, "8-9:30") == 0) {
+  if (strcmp(slot, "8:00-9:30") == 0) {
     time_slot = 0;
   } else if (strcmp(slot, "9:30-11:00") == 0) {
     time_slot = 1;
@@ -80,6 +76,7 @@ int parse_req(struct classroom (*time_slots)[5], char* req, int* parsed_slot, in
   } else if (strcmp(slot, "18:30-20:00") == 0) {
     time_slot = 7;
   } else {
+    printf("Hi\n");
     return -3;
   }
 
@@ -122,18 +119,6 @@ int handle_req(struct classroom (*time_slots)[5], int slot, int type, int room, 
   }
 
   switch(type) {
-    // case 0:
-    //   for (int i = 0; i < MAX_SLOTS; i++){
-    //     for (int j = 0; j < MAX_ROOMS; j++){
-    //       if (time_slots[i][j].booked == 1){
-    //         sprintf(buf, "'%d', '%s'", j, (i == 0) ? t1 : (i == 1) ? t2 : (i == 2) ? t3 : (i == 3) ? t4 : (i == 4) ? t5 : (i == 5) ? t6 : (i == 6) ? t7 : t8);
-    //         send(connfd, buf, n, 0);
-    //       }
-          
-    //     }
-    //   }
-    //   sem_post(&time_slots[slot][room-1].access);
-    //   break;
     case 1:
       time_slots[slot][room-1].available = 0;
       time_slots[slot][room-1].booked = 1;
@@ -154,19 +139,6 @@ int handle_req(struct classroom (*time_slots)[5], int slot, int type, int room, 
   return 0;
 }
 
-// int handle_GET_req(struct classroom (*time_slots)[5], int slot, int type, int connfd, int n, char* buf) {
-//   for (int i = 0; i < MAX_SLOTS; i++){
-//     for (int j = 0; j < MAX_ROOMS; j++){
-//       if (time_slots[i][j].booked == 1){
-//         sprintf(buf, "'%d', '%s'", j, (i == 0) ? t1 : (i == 1) ? t2 : (i == 2) ? t3 : (i == 3) ? t4 : (i == 4) ? t5 : (i == 5) ? t6 : (i == 6) ? t7 : t8);
-//       }
-//     }
-//   }
-//   puts(buf);
-//   send(connfd, buf, n, 0);
-//   return 0;
-// }
-
 int handle_GET_req(struct classroom (*time_slots)[5], int slot, int type, int connfd, int n, char* buf) {
     buf[0] = '\0'; // Ensure buf is initially an empty string
 
@@ -177,7 +149,7 @@ int handle_GET_req(struct classroom (*time_slots)[5], int slot, int type, int co
         for (int j = 0; j < MAX_ROOMS; j++) {
             if (time_slots[i][j].booked == 1) {
                 char slot_info[100]; // Adjust the size as needed
-                sprintf(slot_info, "('%d','%s')", j + 1, (i == 0) ? "8-9:30" : (i == 1) ? "9:30-11:00" : (i == 2) ? "11:00-12:30" : (i == 3) ? "12:30-14:00" : (i == 4) ? "14:00-15:30" : (i == 5) ? "15:30-17:00" : (i == 6) ? "17:00-18:30" : "18:30-20:00");
+                sprintf(slot_info, "('%d','%s')", j + 1, (i == 0) ? "8:00-9:30" : (i == 1) ? "9:30-11:00" : (i == 2) ? "11:00-12:30" : (i == 3) ? "12:30-14:00" : (i == 4) ? "14:00-15:30" : (i == 5) ? "15:30-17:00" : (i == 6) ? "17:00-18:30" : "18:30-20:00");
 
                 // Concatenate slot_info to buf
                 strcat(buf, slot_info);
@@ -194,7 +166,7 @@ int handle_GET_req(struct classroom (*time_slots)[5], int slot, int type, int co
 
     // Add a closing bracket to the end of the string
     strcat(buf, "}");
-    strcat(buf,"\0");
+    strcat(buf, "\0");
     // Output the final content of buf
     puts(buf);
 
@@ -231,26 +203,7 @@ int main (int argc, char **argv)
       sem_init(&time_slots[j][i].access, 1, 1);
     }
   }
-  // struct classroom **time_slots = (struct classroom *)shmat(shmid, NULL, 0);
-  // if (time_slots == (struct classroom**)-1) {
-  //   perror("shmat");
-  //   return 1;
-  // }
 
-  // // Initialize the time_slots
-  // for (int j = 0; j < MAX_SLOTS; j++) {
-  //   for (int i = 0; i < MAX_ROOMS; i++) {
-
-  //     time_slots[j][i].available = 1;
-  //     time_slots[j][i].booked = -1;
-  //     time_slots[j][i].booktime = -1;
-  //                     printf("Hello!\n");
-  //     sem_init(&time_slots[j][i].access, 1, 1);
-
-  //   }
-  // }
-
-  // printf("Hello!\n");
   int listenfd, connfd, n;
   pid_t childpid;
   socklen_t clilen;
@@ -259,8 +212,8 @@ int main (int argc, char **argv)
   //Create a socket for the soclet
   //If sockfd<0 there was an error in the creation of the socket
   if ((listenfd = socket (AF_INET, SOCK_STREAM, 0)) <0) {
-  perror("Problem in creating the socket");
-  exit(2);
+    perror("Problem in creating the socket");
+    exit(2);
   }
 
 
@@ -300,8 +253,6 @@ int main (int argc, char **argv)
       }
 
       else {
-          //puts(buf);
-          // To parse the buffer here.
           int p_res, h_res;
           int p_slot;
           int p_type;
@@ -333,12 +284,7 @@ int main (int argc, char **argv)
     //close socket of the server
     close(connfd);
   }
-
-  /* Detach the shared memory segment. */
   shmdt(time_slots);
-
-  /* Optionally, you may want to remove the shared memory segment.
-    This will depend on your application requirements. */
   shmctl(shmid, IPC_RMID, NULL);
   return 0;
 

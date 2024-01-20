@@ -1,81 +1,3 @@
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <sys/types.h>
-// #include <sys/socket.h>
-// #include <netinet/in.h>
-// #include <string.h>
-// #include <arpa/inet.h>
-// #include <sys/time.h>
-// #include <string.h>
-// #include <stdbool.h>
-
-// #define MAXLINE 4096 /*max text line length*/
-// #define SERV_PORT 3000 /*port*/
-// #define MAX_ROW_LENGTH 40
-
-// int
-// main(int argc, char **argv) 
-// {
-//     // Opening the csv file
-//     FILE* reqs;
-//     char req[MAX_ROW_LENGTH];
-//     char *cell_val;
-    
-//     reqs = fopen(argv[1],"r");
-//     fgets(req, MAX_ROW_LENGTH, reqs); // To ignore the header
-//     if (reqs == NULL) {
-//         perror("Error opening file");
-//         exit(5);
-//     }
-
-//     int sockfd;
-//     struct sockaddr_in servaddr;
-//     char sendline[MAXLINE], recvline[MAXLINE];
-
-//     char Server_IP[10] = "127.0.0.1";
-//     //Create a socket for the client
-//     //If sockfd<0 there was an error in the creation of the socket
-//     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-//         perror("Problem in creating the socket");
-//         exit(6);
-//     }
-
-//     //Creation of the socket
-//     memset(&servaddr, 0, sizeof(servaddr));
-//     servaddr.sin_family = AF_INET;
-//     servaddr.sin_addr.s_addr= inet_addr(Server_IP);
-//     servaddr.sin_port =  htons(SERV_PORT); //convert to big-endian order
-//     struct timeval start, end;
-//     double elapsed;
-//     //Connection of the client to the socket 
-//     if (connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr))<0) {
-//     perror("Problem in connecting to the server");
-//     exit(3);
-//     }
-//     while (fgets(req, MAX_ROW_LENGTH, reqs) != NULL) {
-//         strcpy(sendline, req);
-//         send(sockfd, sendline, strlen(sendline), 0);
-
-//         if (recv(sockfd, recvline, MAXLINE - 1, 0) == 0){
-//             // error: server terminated prematurely
-//             perror("The server terminated prematurely"); 
-//             exit(4);
-//         }
-        
-//         recvline[MAXLINE - 1] = '\0';
-//         printf("%s", "String received from the server: ");
-//         fputs(recvline, stdout);
-//         fputs("\n",stdout);
-//         printf("%s", req);
-        
-//         memset(recvline, 0, sizeof(recvline));  // Clear recvline for the next response
-//     }
-//     fclose(reqs);
-//     close(sockfd);
-//     exit(0);
-//     return 0;
-// }
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -86,9 +8,9 @@
 #include <sys/time.h>
 #include <stdbool.h>
 
-#define MAXLINE 4096 /* max text line length */
+#define MAXLINE 5120 /* max text line length */
 #define SERV_PORT 3000 /* port */
-#define MAX_ROW_LENGTH 40
+#define MAX_ROW_LENGTH 5120
 
 int main(int argc, char **argv) {
     FILE* reqs;
@@ -119,10 +41,6 @@ int main(int argc, char **argv) {
 
     // Write the modified line to the output file
     fprintf(output, "%s", req);
-    // req[-1] = ",";
-    // // strcat(req,",");
-    // strcat(req,"Status\n");
-    // fprintf(output,req);
     while (feof(reqs) != true) {
         if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
             perror("Problem in creating the socket");
@@ -138,10 +56,14 @@ int main(int argc, char **argv) {
             exit(3);
         }
         fgets(req, MAX_ROW_LENGTH, reqs);
+        size_t len_req = strlen(req);
+        // if (len_req > 0){
+        //     req[len_req-1] = '\0';
+        // }
         printf("Row: %s", req);
         strcpy(sendline, req);
         send(sockfd, sendline, strlen(sendline), 0);
-        // sleep(1);
+        sleep(2);
         recv(sockfd, recvline, MAXLINE, 0);
         size_t len2 = strlen(recvline);
         if (len2 > 2) {
@@ -174,8 +96,6 @@ int main(int argc, char **argv) {
 
             fprintf(output, "%s", req);
         }
-
-        // memset(recvline, 0, sizeof(recvline));  
         close(sockfd);
     }
     fclose(reqs);
